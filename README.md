@@ -1,7 +1,10 @@
 # erddap-parser
 
+https://observablehq.com/@akbstone/test-from-erddap
+See where ``variable`` and ``variable_object`` are defined
+
 API
-——-
+---
 
 - ``create_erddap_url(search_arguments)``
 - ``search_tabledap(url)``
