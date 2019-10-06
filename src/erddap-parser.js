@@ -1,29 +1,50 @@
 
 
 export default {
-		create_erddap_url(search_arguments){
+		createErddapUrl(erddap_install,search_arguments){
 
 		},
 
-		get_tabledap_data(url){
+		getTabledapData(url){
 			
 		},
 
-		get_tabledap_metadata(url){
+		getTabledapDatasetMetadata(dataset){
+			let _this = this;
+			return new Promise(function(resolve,reject){
+				d3.csv('https://erddap.sensors.axds.co/erddap/info/' + dataset + '/index.csv').then(function(csv){
+					resolve(_this.parseTabledapMetadata(csv))
+				})
+			})
+		
+		},
+
+		searchTabledap(erddap_install,query){
 
 		},
 
-		search_tabledap(url){
-
-		},
-
-		parse_tabledap_data(csv,metadata){
+		parseTabledapData(csv,metadata){
 			return 33;
 		},
-		parse_tabledap_search_results(csv){
+		parseTabledapSearchSesults(csv){
 			return 44;
 		},
-		parse_tabledap_metadata(csv){
-			return 22;
+		parseTabledapMetadata(csv){
+			return csv.filter(d=>d['Row Type'] == 'variable')
+				.filter(
+					d=>d['Variable Name'] !== 'latitude' && 
+					d['Variable Name'] !== 'longitude' && 
+					d['Variable Name'] !== 'z' && 
+					d['Variable Name'] !== 'station'
+				)
+				.map(function(d){
+					var attributes = csv.filter(r=>r['Variable Name'] == d['Variable Name'] && r['Row Type'] == 'attribute')
+					attributes.forEach(function(a){
+					d[a['Attribute Name']] = a['Value']
+					})
+				
+					return d;
+				})
+			
 		}
 	}
