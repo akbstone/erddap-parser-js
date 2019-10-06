@@ -8,14 +8,13 @@
   ],
   "license": "BSD-3-Clause",
   "main": "build/erddap-parser.js",
-  "jsnext:main": "index",
   "homepage": "https://github.com/akbstone/erddap-parser",
   "repository": {
     "type": "git",
     "url": "https://github.com/akbstone/erddap-parser.git"
   },
   "scripts": {
-    "build": "rm -rf build && mkdir build && rollup -c",
+    "build": "rm -rf build && mkdir build && rollup -c && rm -rf dist && mkdir dist && rollup --config rollup.dist.config.js",
     "pretest": "npm run build",
     "test": "tape test/**/*-test.js | tap-summary",
     "prepare": "npm run test && uglifyjs build/erddap-parser.js -c -m -o build/erddap-parser.min.js",
