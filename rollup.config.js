@@ -1,6 +1,6 @@
 export default {
-  input: 'index.js',
-  external: ['d3-csv'],
+  input: 'src/index.js',
+  external: ['d3-dsv'],
   output:{
     format: 'umd',
     name:'d3',
@@ -8,7 +8,7 @@ export default {
     moduleId:'erddap-parser',
     extend:true,
     globals:{
-      'd3-csv':'d3'
+      'd3-dsv':'d3'
     }
   }
 }
