@@ -15,7 +15,7 @@ export default {
 			if(!ob.server){
 				throw(new Error('Must define server'))
 			}
-			let erddap_server = ob.server,
+			let erddap_srv = ob.server,
 				protocol = ob.protocol,
 				request = ob.request === 'metadata' ? 'info' : ob.request || 'data', //default to data
 				dataset_id = ob.dataset_id,
@@ -45,7 +45,7 @@ export default {
 					(constraints[k] instanceof Date ? constraints[k].toISOString() : constraints[k])));
 			})
 			
-			return erddap_server + 
+			return erddap_srv + 
 				(protocol ? ('/' + protocol) : '') + 
 				(request === 'data' ? '' : '/' + request) + 
 				(dataset_id ? ('/' + dataset_id) : '') + 
