@@ -16,7 +16,8 @@
   "scripts": {
     "build": "rm -rf build && mkdir build && rollup -c",
     "pretest": "npm run build",
-    "test": "tape test/**/*-test.js | tap-summary",
+    "test": "tap test",
+    "cover": "tap test/*.js --cov --coverage-report=lcov",
     "prepare": "npm run test",
     "postpublish": "zip -j build/erddap-parser.zip -- LICENSE README.md build/erddap-parser.js"
   },
@@ -26,8 +27,8 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-node-resolve": "^4.2.3",
     "rollup-plugin-terser": "^5.1.2",
-    "tap-summary": "^4.0.0",
-    "tape": "4.11.0"
+    "tap": "^14.6.9",
+    "tap-summary": "^4.0.0"
   },
   "dependencies": {
     "d3-dsv": "^1.1.1",
