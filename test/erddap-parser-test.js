@@ -1,30 +1,16 @@
 const tape = require("tap").test,
 	  erddapParser = require("../").erddapParser,
-	  testMetadata = require('./test_metadata.json');
+	  testMetadata = require('./test_metadata.json'),
+	  expectedParsedMetadata = require('./expected_metadata.json'),
+	  expectedParsedMetadataRevisions = require('./expected_etadata_revision.json');
 
 
 tape("parseDatasetMetadata() formats headers correctly", function(test){
 
 
 	var metadata_csv = testMetadata,//mock metadata csv
-		metadata = erddapParser.parseDatasetMetadata(metadata_csv),
-		expected = {
-			"Row Type": "variable",
-			"Variable Name": "air_temperature",
-			"Attribute Name": "",
-			"Data Type": "double",
-			"Value": "",
-			"_FillValue": "-9999.99",
-			"_fillvalue": "-9999.99",
-			"id": "322100",
-			"ioos_category": "Other",
-			"long_name": "Air Temperature",
-			"missing_value": "-9999.99",
-			"platform": "station",
-			"standard_name": "air_temperature",
-			"units": "degree_Celsius",
-			"urn": "http://mmisw.org/ont/cf/parameter/air_temperature"
-		  };
+		expected = expectedParsedMetadata,
+		metadata = erddapParser.parseDatasetMetadata(metadata_csv);
 
 	test.deepEqual(metadata[0], expected)
 	test.equal(metadata[0]['Variable Name'],'air_temperature');
@@ -34,6 +20,18 @@ tape("parseDatasetMetadata() formats headers correctly", function(test){
 	test.end();
 })
 
+
+tape("parseDatasetMetadataRevision() formats headers correctly", function(test){
+
+
+	var metadata_csv = testMetadata,//mock metadata csv
+		expected = expectedParsedMetadataRevisions,
+		metadata = erddapParser.parseDatasetMetadataRevisions(metadata_csv);
+
+	test.deepEqual(metadata[0].parameters[0], expected.parameters[0])
+	test.equal(metadata[0].label,expected.label)
+	test.end();
+})
 
 
 tape("parseTabledapData() formats data correctly", function(test){

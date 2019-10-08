@@ -1,0 +1,24 @@
+{
+    "parameters":[
+        {
+            "variable_name": "air_temperature",
+            "attribute_name": "",
+            "data_type": "double",
+            "value": "",
+            "fill_value": "-9999.99",
+            "id": "322100",
+            "ioos_category": "Other",
+            "long_name": "Air Temperature",
+            "missing_value": "-9999.99",
+            "platform": "station",
+            "standard_name": "air_temperature",
+            "units": "degree_Celsius",
+            "urn": "http://mmisw.org/ont/cf/parameter/air_temperature"
+        }
+    ],
+    "label":"Anchorage, Ted Stevens Anchorage International Airport",
+    "latitude":61.1666666666667,
+    "longitude":-150.033333333333,
+    "x_axis":"time",
+    "z_axis":null
+}
