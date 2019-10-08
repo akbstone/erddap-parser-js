@@ -28,6 +28,7 @@
     "uglify-js": "3.5.4"
   },
   "dependencies": {
-    "d3-dsv": "^1.1.1"
+    "d3-dsv": "^1.1.1",
+    "d3-fetch": "^1.1.2"
   }
 }
