@@ -1,8 +1,6 @@
-const tape = require("tape"),
+const tape = require("tap").test,
 	  erddapParser = require("../").erddapParser,
 	  testMetadata = require('./test_metadata.json');
-
-
 
 
 tape("parseDatasetMetadata() formats headers correctly", function(test){
