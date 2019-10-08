@@ -1,0 +1,55 @@
+<html>
+	<head>
+        <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+        <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+		<script src="../dist/erddap-parser.js"></script>
+		
+	</head>
+	<body>
+
+            <script type="text/javascript">
+            let erddap_server = 'https://erddap.sensors.axds.co/erddap',
+                dataset = 'gov_noaa_nws_panc',
+                metadata,
+                data;
+            (async () => {
+                try {
+                    
+                    metadata = await d3.erddapParser.getDatasetMetadata({
+                        server:erddap_server,
+                        dataset_id:dataset
+                    });
+                    console.log(metadata);
+                } catch (e) {
+                    throw(e)
+                    // Deal with the fact the chain failed
+                }
+                try {
+                    let now = new Date(),
+                        day = 24*60*60*1000,
+                        start = new Date(+now - 10*day),
+                        end = now;
+
+                    data = await d3.erddapParser.getTabledapData({
+                        server:erddap_server,
+                        dataset_id:dataset,
+                        constraints:{
+                            'time>=':start,
+                            'time<=':end
+                        },
+                        variables:['air_temperature','time'],
+                        variable_names:{
+                            air_temperature:'value'
+                        }
+                    })
+                    console.log(data)
+                } catch(e) {
+                    throw(e)
+                }
+            })();
+                
+                
+            </script>
+
+    </body>
+</html>
