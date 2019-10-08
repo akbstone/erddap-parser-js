@@ -127,6 +127,7 @@ export default {
 			return searchCsv;
 		},
 		parseDatasetMetadata:function(metadataCsv){
+			 
 			return metadataCsv.filter(d=>d['Row Type'] == 'variable')
 				.filter(
 					d=>d['Variable Name'] !== 'latitude' && 
