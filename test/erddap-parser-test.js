@@ -4,7 +4,7 @@ const tape = require("tape"),
 
 
 
-tape("parseTabledapMetadata() formats headers correctly", function(test){
+tape("parseDatasetMetadata() formats headers correctly", function(test){
 
 
 	var metadata_csv = [
@@ -19,12 +19,13 @@ tape("parseTabledapMetadata() formats headers correctly", function(test){
 			{"Row Type": "attribute", "Variable Name": "air_temperature", "Attribute Name": "units", "Data Type": "String", Value: "degree_Celsius"},
 			{"Row Type": "attribute", "Variable Name": "air_temperature", "Attribute Name": "urn", "Data Type": "String", Value: "http://mmisw.org/ont/cf/parameter/air_temperature"}
 		],//mock metadata csv
-		metadata = erddapParser.parseTabledapMetadata(metadata_csv);
+		metadata = erddapParser.parseDatasetMetadata(metadata_csv);
 
 
 	test.equal(metadata[0]['Variable Name'],'air_temperature');
 	test.equal(metadata[0]['long_name'],'Air Temperature');
 	test.equal(metadata[0]['units'],'degree_Celsius');
+	//test.deepEqual(metadata[0],)
 	test.end();
 })
 
@@ -33,16 +34,12 @@ tape("parseTabledapMetadata() formats headers correctly", function(test){
 tape("parseTabledapData() formats data correctly", function(test){
 
 
-	var metadata_csv = [
-
-		],//mock metadata csv
-		data_csv = [
+	var dataCsv = [
 
 
 		],
-		metadata = erddapParser.parseTabledapMetadata(metadata_csv),
-		data = erddapParser.parseTabledapData(data_csv,data)
+		data = erddapParser.parseTabledapData(dataCsv)
 
-	test.equal(data,33)
+	test.deepEqual(data,[])
 	test.end();
 })
