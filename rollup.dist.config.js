@@ -1,11 +1,6 @@
-import resolve from 'rollup-plugin-node-resolve';
-
 export default {
   input: 'src/index.js',
-  //external: ['d3-fetch'],
-  plugins:[
-    resolve()
-  ],
+  external: ['d3-fetch'],
   output:{
     format: 'umd',
     name:'d3',
