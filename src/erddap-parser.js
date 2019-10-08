@@ -1,4 +1,4 @@
-import {csv} from 'd3-fetch';
+import {csv,json} from 'd3-fetch';
 
 export default {
 			
@@ -64,7 +64,12 @@ export default {
 			let url = this.createErddapUrl(ob),
 				response = ob.response || 'csv',
 				parseType = response.match(/csv/) ? 'csv' : (response.match(/json/) ? 'json' : 'text'),
-				res = await d3[parseType](url);
+				fns = {
+					json:json,
+					csv:csv
+				},
+				fn = fns[parseType],
+				res = await fn(url);
 
 			return res;
 		},
