@@ -14,18 +14,20 @@
     "url": "https://github.com/akbstone/erddap-parser.git"
   },
   "scripts": {
-    "build": "rm -rf build && mkdir build && rollup -c && rm -rf dist && mkdir dist && rollup --config rollup.dist.config.js",
+    "build": "rm -rf build && mkdir build && rollup -c",
     "pretest": "npm run build",
     "test": "tape test/**/*-test.js | tap-summary",
-    "prepare": "npm run test && uglifyjs build/erddap-parser.js -c -m -o build/erddap-parser.min.js",
-    "postpublish": "zip -j build/erddap-parser.zip -- LICENSE README.md build/erddap-parser.js build/erddap-parser.min.js"
+    "prepare": "npm run test",
+    "postpublish": "zip -j build/erddap-parser.zip -- LICENSE README.md build/erddap-parser.js"
   },
   "devDependencies": {
+    "@babel/core": "^7.6.2",
     "rollup": "1.1.0",
+    "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-terser": "^5.1.2",
     "tap-summary": "^4.0.0",
-    "tape": "4.11.0",
-    "uglify-js": "3.5.4"
+    "tape": "4.11.0"
   },
   "dependencies": {
     "d3-dsv": "^1.1.1",
