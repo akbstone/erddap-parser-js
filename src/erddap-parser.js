@@ -133,7 +133,8 @@ export default {
 					d=>d['Variable Name'] !== 'latitude' && 
 					d['Variable Name'] !== 'longitude' && 
 					d['Variable Name'] !== 'z' && 
-					d['Variable Name'] !== 'station'
+					d['Variable Name'] !== 'station' && 
+					!d['Variable Name'].match(/time/i)
 				)
 				.map(function(d){
 					var attributes = metadataCsv.filter(r=>r['Variable Name'] == d['Variable Name'] && r['Row Type'] == 'attribute')
