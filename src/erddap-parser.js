@@ -9,7 +9,18 @@ export default {
 		validateRequest:function(r){
 			return r === 'data' || r === 'info' || r === 'search';
 		},
-
+	
+		/**
+		 * Generate an ERDDAP URL from the given constraints
+		 * @param {Object} ob - an object passed from input specifying the parameters of the ERDDAP URL
+		 * @param {string} ob.server - the base URL of the ERDDAP server
+		 * @param {string} ob.protocol - the ERDDAP protocol: griddap or tabledap
+		 * @param {string} ob.request - the type of request: data or metadata (or info)
+		 * @param {string} ob.dataset_id - the dataset identifier (the part after the server and protocol)
+		 * @param {array} ob.constraints - the values (e.g., min max) the constrain the request
+		 * @param {array} ob.variables - the variables requested
+		 * @param {string} ob.response - the type of response requested (default: csv)
+		 */
 		createErddapUrl:function(ob){
 			ob = ob || {};
 			if(!ob.server){
@@ -130,10 +141,11 @@ export default {
 
 			return metadataCsv.filter(d=>d['Row Type'] == 'variable')
 				.filter(
-					d=>d['Variable Name'] !== 'latitude' &&
-					d['Variable Name'] !== 'longitude' &&
-					d['Variable Name'] !== 'z' &&
-					d['Variable Name'] !== 'station'
+					d=>d['Variable Name'] !== 'latitude' && 
+					d['Variable Name'] !== 'longitude' && 
+					d['Variable Name'] !== 'z' && 
+					d['Variable Name'] !== 'station' && 
+					!d['Variable Name'].match(/time/i)
 				)
 				.map(function(d){
 					var attributes = metadataCsv.filter(r=>r['Variable Name'] == d['Variable Name'] && r['Row Type'] == 'attribute')
