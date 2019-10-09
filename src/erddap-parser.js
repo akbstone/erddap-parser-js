@@ -105,8 +105,18 @@ export default {
 			return this.parseDatasetMetadata(metadataCsv)
 		},
 
-		searchTabledap: async function(query){
-			let searchCsv = csv('http://erddap.sensors.axds.co/erddap/search/index.html?page=1&itemsPerPage=20&searchFor=' + query)
+		searchTabledap: async function(ob){
+
+			ob.constraints = Object.assign({'itemsPerPage':20, 'page': 1}, ob.constraints);
+
+			if ( !ob.constraints.searchFor) {
+				return this.parseTabledapSearchSesults([]);
+			}
+
+			ob.request = 'search';
+			ob.response = 'csv';
+
+			let searchCsv = await this.getErddapData(ob)
 			return this.parseTabledapSearchSesults(searchCsv)
 		},
 
