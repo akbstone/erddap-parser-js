@@ -3,8 +3,14 @@
 https://observablehq.com/@akbstone/test-from-erddap
 See where ``variable`` and ``variable_object`` are defined
 
-API
 ---
+
+## Install
+```
+npm install erddap-parser
+```
+
+## API
 
 ```
 createErddapUrl({
@@ -12,7 +18,7 @@ createErddapUrl({
     protocol:'tabledap',
     request: 'search' || 'data' || 'metadata', // default 'data'
     variables:['time','air_temperature',...],
-    constraints = {
+    constraints: {
         'time>=': '2016-07-10T00:00:00Z',
         'time<=': '2017-02-10T00:00:00Z'
     },
@@ -30,6 +36,15 @@ createErddapUrl({
 - ``getDatasetMetadata(ob)``
 - ``parseDatasetMetadata(metadaCSV,ob)``
 - ``parseTabledapData(dataCSV,ob)``
+
+## dev install
+```
+git clone https://github.com/akbstone/erddap-parser-js.git
+cd erddap-parser-js
+npm install .
+npm test
+npm start
+```
 
 NOTES
 -----
