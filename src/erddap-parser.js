@@ -34,8 +34,8 @@ export default {
 				variables = ob.variables || [],
 				response = ob.response || 'csv',
 				path = (request === 'info' || request == 'search') ? 'index' : '';
-			
-			
+
+
 			if(!this.validateRequest(request)){
 				throw(new Error('Invalid request type (' + request + ')'))
 			}
@@ -43,7 +43,7 @@ export default {
 			if(!this.validateResponse(response)){
 				throw new Error('Invalid response type (' + response + ')')
 			}
-			
+
 			if(request !== 'search' && !dataset_id){
 				throw(new Error('Must define dataset_id for info and data requests'));
 			}
@@ -52,15 +52,15 @@ export default {
 				constraint_keys = Object.keys(constraints || {})
 			constraint_keys.forEach(k=>{
 				constraint_filters.push(
-					(k.replace('>','%3E').replace('<','%3C')) + ((k.match(/=|>|</) ? '' : '=') + 
+					(k.replace('>','%3E').replace('<','%3C')) + ((k.match(/=|>|</) ? '' : '=') +
 					(constraints[k] instanceof Date ? constraints[k].toISOString() : constraints[k])));
 			})
-			
-			return erddap_srv + 
-				(protocol ? ('/' + protocol) : '') + 
-				(request === 'data' ? '' : '/' + request) + 
-				(dataset_id ? ('/' + dataset_id) : '') + 
-				(path ? ('/' + path) : '') + 
+
+			return erddap_srv +
+				(protocol ? ('/' + protocol) : '') +
+				(request === 'data' ? '' : '/' + request) +
+				(dataset_id ? ('/' + dataset_id) : '') +
+				(path ? ('/' + path) : '') +
 				'.' + response + '?' +
 				[
 					(variables ? variables.join('%2C') : null),
@@ -114,22 +114,22 @@ export default {
 
 			let variable_names = ob.variable_names || {},
 				variables = (
-					ob.variables || 
+					ob.variables ||
 					Object.keys((dataCsv && dataCsv.length) ? dataCsv[0] : {})
 				).map(v=>{
 					return {
 						key:variable_names[v] || v,
-						value:v 
+						value:v
 					}
 				});
-			
+
 			dataCsv.shift();
-			dataCsv = dataCsv.slice().map(function(d){ 
+			dataCsv = dataCsv.slice().map(function(d){
 				let o = {};
 				variables.forEach(v=>{
-					o[v.key] = v.key.match(/time|date/) ? new Date(d[v.value]) : +d[v.value]; 
+					o[v.key] = v.key.match(/time|date/) ? new Date(d[v.value]) : +d[v.value];
 				})
-				return o;	
+				return o;
 			});
 
 			return dataCsv;
@@ -138,7 +138,7 @@ export default {
 			return searchCsv;
 		},
 		parseDatasetMetadata:function(metadataCsv){
-			 
+
 			return metadataCsv.filter(d=>d['Row Type'] == 'variable')
 				.filter(
 					d=>d['Variable Name'] !== 'latitude' && 
@@ -153,9 +153,9 @@ export default {
 						d[a['Attribute Name']] = a['Value']
 						d[a['Attribute Name'].toLowerCase().replace(/\s+/g,'_')] = a['Value'];
 					})
-				
+
 					return d;
 				})
-			
+
 		}
 	}
