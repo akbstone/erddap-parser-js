@@ -1,55 +1,161 @@
 <html>
-	<head>
-        <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
-        <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
-		<script src="../build/erddap-parser.js"></script>
-		
-	</head>
-	<body>
 
-            <script type="text/javascript">
-            let erddap_server = 'https://erddap.sensors.axds.co/erddap',
-                dataset = 'gov_noaa_nws_panc',
-                metadata,
-                data;
-            (async () => {
+<head>
+    <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+    <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+    <script src="../build/erddap-parser.js"></script>
+    <style type="text/css">
+      input {
+        width: 300px;
+      }
+      label {
+        display: inline-block;
+        width: 150px;
+        text-align: right;
+        font-weight: bold;
+      }
+    </style>
+</head>
+
+<body>
+    <p>
+      <strong>NOTE:</strong> Check javascript console window for example results. 
+    </p>
+    <form method="get">
+      <p>
+        <label for="server">ERDDAP Server: </label> <input type="text" name="server" id="server" value="" placeholder="https://erddap.sensors.axds.co/erddap" />
+      </p>
+      <p>
+        <label for="dataset">Dataset ID: </label> <input type="text" name="dataset" id="dataset" value="" placeholder="gov_noaa_nws_panc" />
+        <label for="protocol">Protocol: </label> 
+        <select name="protocol" id="protocol">
+          <option>tabledap</option>
+          <option>griddap</option>
+        </select>
+      </p>
+      <p>
+        <label for="search">Search String: </label> <input type="text" name="search" id="search" value="" />
+      </p>
+      <p>
+        <input type="submit" value="Go!" />
+      </p>
+    </form>
+
+    <script type="text/javascript">
+        const urlParams = new URLSearchParams(window.location.search);
+        const search_query = urlParams.get('search');
+        const erddap_server_override = urlParams.get('server');
+        const dataset_override = urlParams.get('dataset');
+        const protocol_override = urlParams.get('protocol');
+        
+        // ERDDAP server with Griddap datasets and CORS enabled: http://www.neracoos.org/erddap
+        // Example griddap dataset id: WW3_EastCoast_latest
+
+        let erddap_server = ((!erddap_server_override) ? 'https://erddap.sensors.axds.co/erddap' : erddap_server_override),
+            dataset = ((!dataset_override) ? 'gov_noaa_nws_panc' : dataset_override),
+            protocol = ((!protocol_override) ? 'tabledap' : protocol_override),
+            metadata,
+            data, 
+            search_results;
+
+        console.log("Using ERDDAP Server: " + erddap_server);
+        console.log("Using dataset: " + dataset);
+        console.log("Using protocol: " + protocol);
+        console.log("Search for: " + search_query);
+
+        document.getElementsByName("server")[0].value = erddap_server;
+        document.getElementsByName("dataset")[0].value = dataset;
+        document.getElementsByName("search")[0].value = search_query;
+        document.getElementsByName("protocol")[0].value = protocol;
+        
+        (async () => {
+            // Example get Metadata
+            try {
+                console.log("Get dataset metadata example...")
+
+                metadata = await d3.erddapParser.getDatasetMetadata({
+                    server: erddap_server,
+                    dataset_id: dataset
+                });
+                console.log(metadata);
+            } catch (e) {
+                throw (e)
+                // Deal with the fact the chain failed
+            }
+
+            switch(protocol){
+              case "tabledap":
+                // Example get data (tableDap) usage
                 try {
-                    
-                    metadata = await d3.erddapParser.getDatasetMetadata({
-                        server:erddap_server,
-                        dataset_id:dataset
-                    });
-                    console.log(metadata);
-                } catch (e) {
-                    throw(e)
-                    // Deal with the fact the chain failed
-                }
-                try {
+                    console.log("Get tabledap data example...")
+
                     let now = new Date(),
-                        day = 24*60*60*1000,
-                        start = new Date(+now - 10*day),
+                        day = 24 * 60 * 60 * 1000,
+                        start = new Date(+now - 10 * day),
                         end = now;
 
                     data = await d3.erddapParser.getTabledapData({
-                        server:erddap_server,
-                        dataset_id:dataset,
-                        constraints:{
-                            'time>=':start,
-                            'time<=':end
+                        server: erddap_server,
+                        dataset_id: dataset,
+                        constraints: {
+                            'time>=': start,
+                            'time<=': end
                         },
-                        variables:['air_temperature','time'],
-                        variable_names:{
-                            air_temperature:'value'
+                        variables: ['air_temperature', 'time'],
+                        variable_names: {
+                            air_temperature: 'value'
                         }
                     })
                     console.log(data)
-                } catch(e) {
-                    throw(e)
+                } catch (e) {
+                    throw (e)
                 }
-            })();
-                
-                
-            </script>
+                break;
 
-    </body>
+              case "griddap":
+                // Example get data (tableDap) usage
+                try {
+                  console.log("Get griddap data example...")
+
+
+              } catch (e) {
+                  throw (e)
+              }
+
+              break;
+            }
+
+            if(search_query){
+              // Example search (tableDap) usage
+              try{
+                console.log("search tabledap datasets example, searching for: " + search_query)
+                let ob = {
+                  constraints: {
+                    searchFor: search_query,
+                    itemsPerPage: 40, // default value 20
+                    page: 1           // default value of 1
+                  },
+                  server: erddap_server
+                }
+
+                switch(protocol){
+                  case "tabledap":
+                    search_results = await d3.erddapParser.searchTabledap(ob);
+                    break;
+
+                  case "griddap":
+                    console.log("Griddap search not implemented yet");
+                    //search_results = await d3.erddapParser.searchGriddap(ob);
+                    break;
+                }
+
+                console.log(search_results);
+              }
+              catch(e){
+                throw (e)
+              }
+            }
+        })();
+    </script>
+</body>
 </html>
