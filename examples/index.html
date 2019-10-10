@@ -27,6 +27,7 @@
       </p>
       <p>
         <label for="dataset">Dataset ID: </label> <input type="text" name="dataset" id="dataset" value="" placeholder="gov_noaa_nws_panc" />
+        <label for="variables">Fetch Variables: </label> <input type="text" name="variables" id="variables" value="" placeholder="comma separated list of variables, blank = all" />
         <label for="protocol">Protocol: </label> 
         <select name="protocol" id="protocol">
           <option>tabledap</option>
@@ -47,13 +48,15 @@
         const erddap_server_override = urlParams.get('server');
         const dataset_override = urlParams.get('dataset');
         const protocol_override = urlParams.get('protocol');
+        const vars_override = urlParams.get('variables');
         
-        // ERDDAP server with Griddap datasets and CORS enabled: http://www.neracoos.org/erddap
+        // ERDDAP server with Griddap datasets and CORS enabled: http://www.neracoos.org/erddap, http://imars-physalis.marine.usf.edu:8080/erddap
         // Example griddap dataset id: WW3_EastCoast_latest
 
         let erddap_server = ((!erddap_server_override) ? 'https://erddap.sensors.axds.co/erddap' : erddap_server_override),
             dataset = ((!dataset_override) ? 'gov_noaa_nws_panc' : dataset_override),
             protocol = ((!protocol_override) ? 'tabledap' : protocol_override),
+            ds_variables = ((!vars_override) ? ['time'] : vars_override.split(',')),
             metadata,
             data, 
             search_results;
@@ -78,6 +81,13 @@
                     dataset_id: dataset
                 });
                 console.log(metadata);
+
+                if(ds_variables.length == 1){
+                  metadata.map(meta_rec => {
+                    ds_variables.push(meta_rec["Variable Name"])
+                  });
+                }
+
             } catch (e) {
                 throw (e)
                 // Deal with the fact the chain failed
@@ -101,7 +111,9 @@
                             'time>=': start,
                             'time<=': end
                         },
-                        variables: ['air_temperature', 'time'],
+                        variables: ds_variables,
+                        // Override variable names in returned data
+                        // Example renames 'air_temperature' to 'value'
                         variable_names: {
                             air_temperature: 'value'
                         }
@@ -113,10 +125,11 @@
                 break;
 
               case "griddap":
-                // Example get data (tableDap) usage
+                // Example get data (griddap) usage
                 try {
                   console.log("Get griddap data example...")
-
+                  // Example GRIDDAP to CSV call 
+                  // http://www.neracoos.org/erddap/griddap/WW3_EastCoast_latest.csv?hs[(2018-12-01T12:00:00Z):1:(2018-12-01T12:00:00Z)][(55.1):1:(20.1)][(-93.1):1:(-55.099999999999994)],swp[(2018-12-01T12:00:00Z):1:(2018-12-01T12:00:00Z)][(55.1):1:(20.1)][(-93.1):1:(-55.099999999999994)],dir[(2018-12-01T12:00:00Z):1:(2018-12-01T12:00:00Z)][(55.1):1:(20.1)][(-93.1):1:(-55.099999999999994)]
 
               } catch (e) {
                   throw (e)
@@ -128,7 +141,7 @@
             if(search_query){
               // Example search (tableDap) usage
               try{
-                console.log("search tabledap datasets example, searching for: " + search_query)
+                console.log("search erddap datasets example, searching for: " + search_query)
                 let ob = {
                   constraints: {
                     searchFor: search_query,
@@ -138,14 +151,15 @@
                   server: erddap_server
                 }
 
+                // Currently these distinctions appear to be meaningless and 
+                // the search function works equally well for both tabledap and griddap
                 switch(protocol){
                   case "tabledap":
                     search_results = await d3.erddapParser.searchTabledap(ob);
                     break;
 
                   case "griddap":
-                    console.log("Griddap search not implemented yet");
-                    //search_results = await d3.erddapParser.searchGriddap(ob);
+                    search_results = await d3.erddapParser.searchGriddap(ob);
                     break;
                 }
 

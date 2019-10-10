@@ -96,6 +96,18 @@ export default {
 			return this.parseTabledapData(data,ob);
 		},
 
+		getGriddapData:async function(ob)
+		{
+			// GRIDDAP data calls require a very different format from tabledap
+			// createErddapUrl will need to be extended to account for this
+			ob.request = 'data';
+			ob.protocol = 'griddap';
+			ob.response = 'csv';
+			let data = await this.getErddapData(ob)
+
+			return this.parseGriddapData(data,ob);
+		},
+
 
 		getDatasetMetadata: async function(ob){
 			ob.request = 'info';
@@ -104,6 +116,9 @@ export default {
 			let metadataCsv = await this.getErddapData(ob)
 			return this.parseDatasetMetadata(metadataCsv)
 		},
+
+		// TODO: both of these search functions should probably be merged with an option to filter by protocol?
+		// This may depend on what actual changes the parse[Table|Grid]dapSearchResults() functions are intended to return 
 
 		searchTabledap: async function(ob){
 
@@ -118,6 +133,21 @@ export default {
 
 			let searchCsv = await this.getErddapData(ob)
 			return this.parseTabledapSearchSesults(searchCsv)
+		},
+
+		searchGriddap: async function(ob){
+
+			ob.constraints = Object.assign({'itemsPerPage':20, 'page': 1}, ob.constraints);
+
+			if ( !ob.constraints.searchFor) {
+				return this.parseGriddapSearchResults([]);
+			}
+
+			ob.request = 'search';
+			ob.response = 'csv';
+
+			let searchCsv = await this.getErddapData(ob)
+			return this.parseGriddapSearchResults(searchCsv)
 		},
 
 		parseTabledapData:function(dataCsv = [],ob = {}){
@@ -144,7 +174,35 @@ export default {
 
 			return dataCsv;
 		},
+
+		parseGriddapData:function(dataCsv = [],ob = {}){
+
+			let variable_names = ob.variable_names || {},
+				variables = (
+					ob.variables ||
+					Object.keys((dataCsv && dataCsv.length) ? dataCsv[0] : {})
+				).map(v=>{
+					return {
+						key:variable_names[v] || v,
+						value:v
+					}
+				});
+
+			dataCsv.shift();
+			dataCsv = dataCsv.slice().map(function(d){
+				let o = {};
+				variables.forEach(v=>{
+					o[v.key] = v.key.match(/time|date/) ? new Date(d[v.value]) : +d[v.value];
+				})
+				return o;
+			});
+
+			return dataCsv;
+		},
 		parseTabledapSearchSesults:function(searchCsv){
+			return searchCsv;
+		},
+		parseGriddapSearchResults:function(searchCsv){
 			return searchCsv;
 		},
 		parseDatasetMetadata:function(metadataCsv){
