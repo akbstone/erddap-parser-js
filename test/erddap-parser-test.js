@@ -9,7 +9,7 @@ tape("parseDatasetMetadata() formats headers correctly", function(test){
 
 
 	var metadata_csv = testMetadata,//mock metadata csv
-		expected = expectedParsedMetadataRevisions,
+		expected = expectedParsedMetadata,
 		metadata = erddapParser.parseDatasetMetadata(metadata_csv);
 
 	test.deepEqual(metadata[0], expected)
