@@ -51,6 +51,7 @@ NOTES
 
 For updates to get picked up by erddap-realtime-app:
 
+- ``npm run build`` builds a slim version that expects d3 methods to be included globally + version that includes dependencies embdedded
 - Bump package version
 - Run ``npm update`` from erddap-realtime-app
 - Would be fixed by using NPM to publish this
