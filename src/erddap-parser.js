@@ -23,6 +23,54 @@ export default {
 		 */
 		createErddapUrl:function(ob){
 			ob = ob || {};
+			let url_path = this.createErddapURLPath(ob),
+				query_format = 'string',
+				query_string = this.createErddapQueryString({...ob,query_format});
+			
+			return url_path + '?' + query_string;
+		},
+
+
+		/**
+		 * Generate an ERDDAP QUERY string from the given constraints
+		 * @param {Object} ob - an object passed from input specifying the parameters of the ERDDAP URL
+		 * @param {array} ob.constraints - the values (e.g., min max) the constrain the request
+		 * @param {array} ob.variables - the variables requested
+		 * @param {string} ob.query_format - string(default)|object
+		 */
+		createErddapQueryString: function(ob){
+			let constraints = ob.constraints || {},
+				variables = ob.variables || [],
+				constraint_filters = [],
+			
+			constraint_keys = Object.keys(constraints || [])
+			constraint_keys.forEach(k=>{
+				constraint_filters.push(
+					(k.replace('>','%3E').replace('<','%3C')) + ((k.match(/=|>|</) ? '' : '=') +
+					(constraints[k] instanceof Date ? constraints[k].toISOString() : constraints[k])));
+			})
+
+			return ob.query_format === 'object' ? 
+			{
+				variables:variables,
+				constraint_filters:constraint_filters
+			} : [
+					(variables ? variables.join('%2C') : null),
+					(constraint_filters ? constraint_filters.join('&') : null)
+				].filter(d=>d).join('&');
+			
+		},
+
+			
+		/**
+		 * Generate an ERDDAP URL path from the given constraints
+		 * @param {Object} ob - an object passed from input specifying the parameters of the ERDDAP URL
+		 * @param {string} ob.protocol - the ERDDAP protocol: griddap or tabledap
+		 * @param {string} ob.request - the type of request: data or metadata (or info)
+		 * @param {string} ob.dataset_id - the dataset identifier (the part after the server and protocol)
+		 * @param {string} ob.response - the type of response requested (default: csv)
+		 */
+		createErddapURLPath: function(ob){
 			if(!ob.server){
 				throw(new Error('Must define server'))
 			}
@@ -30,8 +78,6 @@ export default {
 				protocol = ob.protocol,
 				request = ob.request === 'metadata' ? 'info' : ob.request || 'data', //default to data
 				dataset_id = ob.dataset_id,
-				constraints = ob.constraints || {},
-				variables = ob.variables || [],
 				response = ob.response || 'csv',
 				path = (request === 'info' || request == 'search') ? 'index' : '';
 
@@ -48,30 +94,21 @@ export default {
 				throw(new Error('Must define dataset_id for info and data requests'));
 			}
 
-			let constraint_filters = [],
-				constraint_keys = Object.keys(constraints || {})
-			constraint_keys.forEach(k=>{
-				constraint_filters.push(
-					(k.replace('>','%3E').replace('<','%3C')) + ((k.match(/=|>|</) ? '' : '=') +
-					(constraints[k] instanceof Date ? constraints[k].toISOString() : constraints[k])));
-			})
-
 			return erddap_srv +
 				(protocol ? ('/' + protocol) : '') +
 				(request === 'data' ? '' : '/' + request) +
 				(dataset_id ? ('/' + dataset_id) : '') +
 				(path ? ('/' + path) : '') +
-				'.' + response + '?' +
-				[
-					(variables ? variables.join('%2C') : null),
-					(constraint_filters ? constraint_filters.join('&') : null)
-				].filter(d=>d).join('&');
-
-
+				'.' + response;
 		},
 
+		/**
+		 * Make an ERDDAP request using given constraints and parameters
+		 * @param {Object} ob - an object passed from input specifying the parameters of the ERDDAP URL
+		 */
 
 		getErddapData:async function(ob){
+
 			let url = this.createErddapUrl(ob),
 				response = ob.response || 'csv',
 				parseType = response.match(/csv/) ? 'csv' : (response.match(/json/) ? 'json' : 'text'),
@@ -79,10 +116,24 @@ export default {
 					json:json,
 					csv:csv
 				},
-				fn = fns[parseType],
-				res = await fn(url);
+				fn = fns[parseType];
+				
 
-			return res;
+			return new Promise((resolve,reject)=>{
+				fn(url)
+					.then(response=> {
+						resolve(response);
+					})
+					.catch(e=>{
+						console.log('Error')
+						console.log(e)
+						//throw new Error('unable to fetch')
+						reject(e);
+					})
+					
+				
+					
+			})
 		},
 
 		getTabledapData:async function(ob)
@@ -97,24 +148,39 @@ export default {
 		},
 
 
+		getDatasetMetadataOb: function(ob){
+			return {...ob,...{
+				request:'info',
+				response:'csv'
+			}}
+		},
+
+
 		getDatasetMetadata: async function(ob){
-			ob.request = 'info';
-			ob.response = 'csv';
+			ob = this.getDatasetMetadataOb(ob);
 
 			let metadataCsv = await this.getErddapData(ob)
 			return this.parseDatasetMetadata(metadataCsv)
 		},
 
+		getSearchTableDapOb: function(ob){
+			return {...ob,...{
+				constraints:{
+					...{'itemsPerPage':20, 'page': 1},
+					...ob.constraints
+				},
+				request:'search',
+				response:'csv'
+			}}
+		},
+
 		searchTabledap: async function(ob){
 
-			ob.constraints = Object.assign({'itemsPerPage':20, 'page': 1}, ob.constraints);
+			ob = this.getSearchTableDapOb(ob);
 
 			if ( !ob.constraints.searchFor) {
 				return this.parseTabledapSearchSesults([]);
 			}
-
-			ob.request = 'search';
-			ob.response = 'csv';
 
 			let searchCsv = await this.getErddapData(ob)
 			return this.parseTabledapSearchSesults(searchCsv)
