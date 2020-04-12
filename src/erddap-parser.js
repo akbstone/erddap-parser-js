@@ -2,11 +2,11 @@ import {csv,json} from 'd3-fetch';
 
 export default {
 
-		validateResponse:function(r){
+		_validateResponse:function(r){
 			return r === 'csv' || r === 'json';
 		},
 
-		validateRequest:function(r){
+		_validateRequest:function(r){
 			return r === 'data' || r === 'info' || r === 'search';
 		},
 	
@@ -82,11 +82,11 @@ export default {
 				path = (request === 'info' || request == 'search') ? 'index' : '';
 
 
-			if(!this.validateRequest(request)){
+			if(!this._validateRequest(request)){
 				throw(new Error('Invalid request type (' + request + ')'))
 			}
 
-			if(!this.validateResponse(response)){
+			if(!this._validateResponse(response)){
 				throw new Error('Invalid response type (' + response + ')')
 			}
 
