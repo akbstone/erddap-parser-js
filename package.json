@@ -1,6 +1,6 @@
 {
   "name": "erddap-parser",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "{DESCRIPTION}",
   "keywords": [
     "d3",
@@ -15,8 +15,8 @@
   },
   "scripts": {
     "build": "rm -rf build && mkdir build && npm run build-full && npm run build-slim",
-    "build-full":"rollup --c",
-    "build-slim":"rollup --c rollup.config.slim.js",
+    "build-full": "rollup --c",
+    "build-slim": "rollup --c rollup.config.slim.js",
     "pretest": "npm run build",
     "test": "tap test",
     "cover": "tap test/*.js --cov --coverage-report=lcov",
