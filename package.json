@@ -1,6 +1,6 @@
 {
   "name": "erddap-parser",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "{DESCRIPTION}",
   "keywords": [
     "d3",
