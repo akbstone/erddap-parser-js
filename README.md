@@ -30,6 +30,10 @@ createErddapUrl({
 
 })
 ```
+- ``createErddapQueryString(ob)``
+- ``createErddapURLPath(ob)``
+- ``getErddapData(ob)``
+- ``getTabledapData(ob)``
 - ``searchTabledap(ob)``
 - ``parseTabledapSearchResults(ob)``
 - ``getTabledapData(ob)``
