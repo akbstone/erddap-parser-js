@@ -34,6 +34,7 @@
 
       .results table,
       .results h3,
+      .results h4,
       .results h5,
       .results p{
         padding:4px 10px;
@@ -120,29 +121,63 @@
                     resDom = document.getElementById('metadata-results');
 
                     resDom.innerHTML = `
-                      <h3>Metadata: ${dataset}</h3>
+                      <h3>Metadata: ${dataset}<br />${metadata.title}</h3>
+                      <h4>Variables</h4>
+                      <table class="variables">
+                      ${metadata.variables.map(r=>{
+                        return `<tr><td>${r['Row Type']}</td><td><a href="${d3.erddapParser.createErddapUrl({
+                          server:erddap_server,
+                          request:'tabledap',
+                          dataset_id:dataset,
+                          response:'graph',
+                          variables:[metadata.dimensions_map.time['Variable Name'],r['Variable Name']]
+                        })}" target="_blank">${r.long_name}</a> (${r.units}) <button style="float:right">Load</button></td></tr>`
+                      }).join("\n")}
+                      </table>
+                      <h4>Dimensions</h4>
                       <table>
-                      ${metadata.map(r=>{
+                      ${metadata.dimensions.map(r=>{
                         return `<tr><td>${r['Row Type']}</td><td>${r.long_name} (${r.units})</td></tr>`
                       }).join("\n")}
                       </table>
+                      <h4>Attributes</h4>
+                      <table>
+                      ${metadata.attributes.map(r=>{
+                        return `<tr><td>${r['Row Type']}</td><td>${r.Value}</td></tr>`
+                      }).join("\n")}
+                      </table>
                     `
+
+                  let els = resDom.getElementsByClassName('variables')[0].getElementsByTagName('button');
+                  for(let i =0;i < els.length;i ++){
+                    els[i].addEventListener('click',e=>{
+                        e.stopPropagation();
+                        e.preventDefault();
+                        getTabledapData(dataset,metadata.variables[i],metadata)
+                        return false;
+                    })
+                  }
                 console.log(metadata);
+                return metadata;
             } catch (e) {
                 throw (e)
                 // Deal with the fact the chain failed
             }
         },
-        getTabledapData = async (dataset)=>{
+        getTabledapData = async (dataset,variableRow,metadata)=>{
           try {
               console.log("Get tabledap data example...")
 
               let now = new Date(),
                   day = 24 * 60 * 60 * 1000,
-                  start = new Date(+now - 10 * day),
-                  end = now,
-                  variables = ['air_temperature', 'time'],
-                  resDom = document.getElementById('data-results')
+                  dataset_end = new Date(metadata.attributes_map.time_coverage_end.Value),
+                  start = new Date(+dataset_end - 10 * day),
+                  end = dataset_end,
+                  variables = [variableRow['Variable Name'], 'time'],
+                  variable_names = {};
+                variable_names[variables[0]] = 'value';
+
+                let resDom = document.getElementById('data-results')
 
                 try{
                   let data = await d3.erddapParser.getTabledapData({
@@ -153,16 +188,14 @@
                             'time<=': end
                         },
                         variables: variables,
-                        variable_names: {
-                            air_temperature: 'value'
-                        }
+                        variable_names:variable_names
                     });
                 
                   resDom.innerHTML = `
                   <h3>Data: ${dataset}</h3>
                   <h5>${variables.join(',')}<br />${start.toISOString()} to ${end.toISOString()}</h5>
                   <table>
-                    <thead><th><th>time</th><th>value</th></tr></thead>
+                    <thead><th>time</th><th>value</th></tr></thead>
                     <tbody>
                   ${data.map(r=>{
                     return `<tr><td>${r.time.toISOString()}</td><td>${r.value}</td></tr>`
@@ -181,6 +214,10 @@
           } catch (e) {
               throw (e)
           }
+        },
+        loadNewDataSet = async (dataset)=>{
+          let metadata = await getMetadata(dataset)
+          getTabledapData(dataset,metadata.variables[0],metadata)
         },
         getTabledapSearchResults = async (search_query)=>{
           try{
@@ -208,7 +245,7 @@
                       <h3>Search</h3>
                       <table>
                         ${results.map(r=>{
-                          return `<tr><td><a href="${r.tabledap}" target="_blank">${r.Title}</a> <button style="float:right">Load metadata and data</button></td></tr>`
+                          return `<tr><td><a href="${r.tabledap}" target="_blank">${r.Title}</a> <button style="float:right">Load</button></td></tr>`
                         }).join("\n")}
                       </table>`
 
@@ -218,8 +255,7 @@
                           els[i].addEventListener('click',e=>{
                               e.stopPropagation();
                               e.preventDefault();
-                              getMetadata(results[i]['Dataset ID'])
-                              getTabledapData(results[i]['Dataset ID'])
+                              loadNewDataSet(results[i]['Dataset ID'])
                               return false;
                           })
                       }
@@ -243,12 +279,12 @@
         
         (async () => {
             // Example get Metadata
-           getMetadata(dataset)
+           let metadata = await getMetadata(dataset)
 
             switch(protocol){
               case "tabledap":
                 // Example get data (tableDap) usage
-                getTabledapData(dataset)
+                getTabledapData(dataset,metadata.variables[0],metadata)
                 break;
 
               case "griddap":
