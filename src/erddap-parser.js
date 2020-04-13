@@ -186,6 +186,10 @@ export default {
 			return this.parseTabledapSearchSesults(searchCsv)
 		},
 
+		parseCSV: function(csvString){
+			return csvParse(csvString);
+		},
+
 		parseTabledapData:function(dataCsv = [],ob = {}){
 
 			let variable_names = ob.variable_names || {},
