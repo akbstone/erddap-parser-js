@@ -213,25 +213,80 @@ export default {
 		parseTabledapSearchSesults:function(searchCsv){
 			return searchCsv;
 		},
+
+		_combineAttributesWithVariable: function(variable_row,csv){
+
+			var attributes = csv.filter(r=>r['Variable Name'] == variable_row['Variable Name'] && r['Row Type'] == 'attribute')
+			attributes.forEach(function(a){
+				variable_row[a['Attribute Name']] = a['Value']
+				variable_row[a['Attribute Name'].toLowerCase().replace(/\s+/g,'_')] = a['Value'];
+			})
+
+			return variable_row;
+		},
 		parseDatasetMetadata:function(metadataCsv){
 
-			return metadataCsv.filter(d=>d['Row Type'] == 'variable')
-				.filter(
-					d=>d['Variable Name'] !== 'latitude' && 
-					d['Variable Name'] !== 'longitude' && 
-					d['Variable Name'] !== 'z' && 
-					d['Variable Name'] !== 'station' && 
-					!d['Variable Name'].match(/time/i)
-				)
-				.map(function(d){
-					var attributes = metadataCsv.filter(r=>r['Variable Name'] == d['Variable Name'] && r['Row Type'] == 'attribute')
-					attributes.forEach(function(a){
-						d[a['Attribute Name']] = a['Value']
-						d[a['Attribute Name'].toLowerCase().replace(/\s+/g,'_')] = a['Value'];
+
+			let	_this = this,
+				variable_rows = metadataCsv
+					.filter(d=>d['Row Type'] == 'variable')
+					.map(r=>{return this._combineAttributesWithVariable(r,metadataCsv)}),
+				variables = variable_rows.filter(d=>!d.axis && d['Data Type'] === 'double'),
+				dimensions = variable_rows.filter(d=>d.axis),
+				variables_map = {},
+				dimensions_map = {},
+				axis_map = {};
+
+			variables.forEach(r=>{
+				variables_map[r['Variable Name']] = r;
+			})
+
+			dimensions.forEach(d=>{
+				if(!axis_map[d.axis]){
+					axis_map[d.axis] = [];
+				}
+				axis_map[d.axis].push(d);
+				dimensions_map[d['Variable Name']] = d;
 					})
 
-					return d;
+			let attribute_rows = metadataCsv.filter(d=> 
+					d['Row Type'] === 'attribute' && 
+					!variables_map[d['Attribute Name']] && 
+					!dimensions_map[d['Attribute Name']]
+				),
+				attributes_map = {};
+			attribute_rows.forEach(r=>{
+				attributes_map[r['Attribute Name']] = r;
 				})
+
+
+			let spatial = {};
+			
+			if(attributes_map.geospatial_lon_min && attributes_map.geospatial_lon_max && attributes_map.geospatial_lat_min && attributes_map.geospatial_lat_max){
+				if(attributes_map.geospatial_lon_min['Value'] === attributes_map.geospatial_lon_max['Value'] && attributes_map.geospatial_lat_min['Value'] === attributes_map.geospatial_lat_max['Value']){
+					spatial.point = [attributes_map.geospatial_lon_min,attributes_map.geospatial_lat_min];
+				}else{
+					spatial.bounds = [
+						[attributes_map.geospatial_lon_min['Value'],attributes_map.geospatial_lat_min['Value']],
+						[attributes_map.geospatial_lon_max['Value'],attributes_map.geospatial_lat_max['Value']]
+					]
+				}
+			}
+
+
+
+
+			return {
+				
+				title:attributes_map.title ? attributes_map.title['Value'] : null,
+				variables:variables,
+				variables_map:variables_map,
+				attributes:attribute_rows,
+				attributes_map:attributes_map,
+				dimensions:dimensions,
+				dimensions_map:dimensions_map,
+				spatial:spatial
+			}
 
 		}
 	}
