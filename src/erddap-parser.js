@@ -1,13 +1,14 @@
 import {csv,json} from 'd3-fetch';
+import {csvParse} from 'd3-dsv';
 
 export default {
 
 		_validateResponse:function(r){
-			return r === 'csv' || r === 'json';
+			return r === 'csv' || r === 'json' || r === 'graph';
 		},
 
 		_validateRequest:function(r){
-			return r === 'data' || r === 'info' || r === 'search';
+			return r === 'data' || r === 'info' || r === 'search' || r === 'tabledap';
 		},
 	
 		/**
@@ -38,7 +39,7 @@ export default {
 		 * @param {array} ob.variables - the variables requested
 		 * @param {string} ob.query_format - string(default)|object
 		 */
-		createErddapQueryString: function(ob){
+		createErddapQueryString: function(ob){			
 			let constraints = ob.constraints || {},
 				variables = ob.variables || [],
 				constraint_filters = [],
@@ -251,7 +252,7 @@ export default {
 				}
 				axis_map[d.axis].push(d);
 				dimensions_map[d['Variable Name']] = d;
-					})
+			})
 
 			let attribute_rows = metadataCsv.filter(d=> 
 					d['Row Type'] === 'attribute' && 
@@ -261,8 +262,8 @@ export default {
 				attributes_map = {};
 			attribute_rows.forEach(r=>{
 				attributes_map[r['Attribute Name']] = r;
-				})
-
+			})
+			
 
 			let spatial = {};
 			
