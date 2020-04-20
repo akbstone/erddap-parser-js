@@ -215,8 +215,20 @@ export default {
 
 			return dataCsv;
 		},
-		parseTabledapSearchSesults:function(searchCsv){
-			return searchCsv;
+		/**
+		 * Parse search csv data to ensure keys are lowercase and spaces
+		 * converted to underscores.
+		 * @param {Object} searchCsv - an object containing the input csv data
+		 */
+		parseTabledapSearchResults:function(searchCsv){
+
+			return searchCsv.map(d =>{
+				var result = {};
+				for (const [key, value] of Object.entries(d)) {
+					result[key.toLowerCase().replace(/\s+/g,"_")] = value;
+				}
+				return result;
+			});
 		},
 
 		_combineAttributesWithVariable: function(variable_row,csv){
